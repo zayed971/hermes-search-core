@@ -1,0 +1,6 @@
+.env
+*_key*
+*secret*
+*.pdf
+__pycache__/
+*.pyc
