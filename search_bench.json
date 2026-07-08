@@ -1,0 +1,94 @@
+{
+  "bench_name": "SEARCH-BENCH v1",
+  "description": "Benchmark for Hermes Phase 2 anti-hallucination pipeline. 10 queries across 5 categories. Each query has ground truth and scoring criteria.",
+  "scoring": {
+    "confidence_weight": 0.35,
+    "verified_claims_weight": 0.25,
+    "source_diversity_weight": 0.20,
+    "sanity_clean_weight": 0.10,
+    "has_citations_weight": 0.10
+  },
+  "queries": [
+    {
+      "id": "bench_01",
+      "category": "factual",
+      "query": "What year was Python first released?",
+      "ground_truth": "1991",
+      "truth_type": "exact_year",
+      "min_confidence": 0.80
+    },
+    {
+      "id": "bench_02",
+      "category": "factual",
+      "query": "Who created the Linux operating system?",
+      "ground_truth": "Linus Torvalds",
+      "truth_type": "exact_name",
+      "min_confidence": 0.85
+    },
+    {
+      "id": "bench_03",
+      "category": "comparative",
+      "query": "compare FastAPI vs Flask for web development",
+      "ground_truth": "FastAPI is async, Flask is sync. FastAPI has built-in validation, Flask needs extensions.",
+      "truth_type": "key_differences",
+      "min_confidence": 0.60
+    },
+    {
+      "id": "bench_04",
+      "category": "comparative",
+      "query": "compare SQL vs NoSQL databases",
+      "ground_truth": "SQL is relational/structured, NoSQL is flexible/schema-less. SQL has ACID, NoSQL has eventual consistency.",
+      "truth_type": "key_differences",
+      "min_confidence": 0.60
+    },
+    {
+      "id": "bench_05",
+      "category": "temporal",
+      "query": "latest developments in AI agents 2026",
+      "ground_truth": "Should mention autonomous agents, multi-agent systems, tool-use advances",
+      "truth_type": "topic_coverage",
+      "min_confidence": 0.50
+    },
+    {
+      "id": "bench_06",
+      "category": "temporal",
+      "query": "current state of open source LLMs 2026",
+      "ground_truth": "Should mention Llama, Mistral, DeepSeek, or similar open models",
+      "truth_type": "topic_coverage",
+      "min_confidence": 0.50
+    },
+    {
+      "id": "bench_07",
+      "category": "technical",
+      "query": "How to deploy a FastAPI app with Docker?",
+      "ground_truth": "Steps: Dockerfile, requirements.txt, docker build, docker run, optionally docker-compose",
+      "truth_type": "procedural_steps",
+      "min_confidence": 0.60
+    },
+    {
+      "id": "bench_08",
+      "category": "technical",
+      "query": "What is RAG in AI and how does it work?",
+      "ground_truth": "Retrieval-Augmented Generation: retrieve documents → augment prompt → generate answer. Uses vector stores, embeddings.",
+      "truth_type": "definition_plus_mechanism",
+      "min_confidence": 0.70
+    },
+    {
+      "id": "bench_09",
+      "category": "niche",
+      "query": "What is Hermes AI agent?",
+      "ground_truth": "Open-source AI agent by Nous Research with memory, skills, cron, multi-platform messaging",
+      "truth_type": "product_description",
+      "min_confidence": 0.70
+    },
+    {
+      "id": "bench_10",
+      "category": "niche",
+      "query": "AI engineering internships Egypt 2026",
+      "ground_truth": "Should find real companies or honestly report data gaps. Content farms must be flagged.",
+      "truth_type": "honesty_check",
+      "min_confidence": 0.40,
+      "must_flag_content_farms": true
+    }
+  ]
+}
