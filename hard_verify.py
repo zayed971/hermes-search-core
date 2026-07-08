@@ -159,6 +159,50 @@ def _detect_artifact_refs(text: str) -> List[str]:
     return refs
 
 
+def _is_local_claim(text: str) -> bool:
+    """Detect if claim references local state Claude can't see."""
+    local_patterns = [
+        r'\b(Desktop|hermes_core|hermes_verify|AgentOS)\b',
+        r'\b(repo|repository|git repo)\b',
+        r'\b(local files?|on disk|on your machine|on my Desktop)\b',
+        r'\bcontains?\s+(AgentOS|Kimi|code|files?)\b',
+        r'/mnt/c/Users/', r'/home/hp/',
+    ]
+    for pat in local_patterns:
+        if re.search(pat, text, re.IGNORECASE):
+            return True
+    return False
+
+
+def _gather_local_evidence(claim_text: str) -> str:
+    """Gather file listings for local claims so Claude can verify."""
+    evidence_parts = []
+    
+    # Detect paths mentioned
+    paths = []
+    if 'hermes_core' in claim_text.lower():
+        paths.append('/mnt/c/Users/HP/Desktop/hermes_core')
+    if 'Desktop' in claim_text:
+        paths.append('/mnt/c/Users/HP/Desktop')
+    
+    for base in paths:
+        if os.path.exists(base):
+            try:
+                # Show directory structure (ls -R, limited depth)
+                cmd = f"find {base} -maxdepth 3 -not -path '*/.git/*' | sort | head -40"
+                result = subprocess.run(
+                    cmd, shell=True, capture_output=True, text=True, timeout=5
+                )
+                if result.stdout.strip():
+                    evidence_parts.append(f"Directory structure of {base}:\n{result.stdout.strip()[:3000]}")
+            except:
+                pass
+    
+    if evidence_parts:
+        return "\n\nEVIDENCE (gathered from local system — use this to verify):\n" + "\n".join(evidence_parts)
+    return ""
+
+
 def _claude_verify(claim_text: str) -> Dict:
     """System B: Verify factual claim using Claude Sonnet."""
     if not ANTHROPIC_API_KEY:
@@ -182,16 +226,22 @@ def _claude_verify(claim_text: str) -> Dict:
             "system": "B-fact"
         }
 
+    # Check if this is a local claim — if so, gather evidence
+    evidence = ""
+    if _is_local_claim(claim_text):
+        evidence = _gather_local_evidence(claim_text)
+
     prompt = f"""You are a rigorous fact-checker. Verify this claim:
 
 CLAIM: "{claim_text}"
-
+{evidence}
 RULES:
 - Be strict. "Sounds right" is not enough.
 - If you lack knowledge, say FAILED — never guess.
 - If sources disagree, say DISPUTED.
 - If too vague, say UNVERIFIABLE.
 - Consider: dates, numbers, named entities, causal claims.
+- If EVIDENCE is provided above, use it to verify the claim.
 
 Respond EXACTLY:
 VERDICT: VERIFIED | PARTIAL | FAILED | DISPUTED | UNVERIFIABLE
